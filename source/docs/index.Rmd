@@ -1,0 +1,358 @@
+---
+title: "Water, and its Factors in different Countries"
+author: "- Ryan Louie (rlouie21@uw.edu)
+- Christopher Chen (cmchen22@uw.edu)
+- Sean Lee (seanl6@uw.edu)
+- Mynah Shetty (mshett@uw.edu)"
+date: "11/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(tidyr)
+library(data.table)
+library(knitr)
+
+```
+
+```{r load_data}
+  #Cholera data
+cholera <- read.csv("../data/data_cholera_infection_rate.csv")
+
+#Handwashing data
+handwash <- read.csv("../data/data_handwash.csv")
+
+#Population data
+population <- read.csv("../data/data_country_population.csv")
+
+#Diarrhea data
+diarrhea <- read.csv("../data/data_diarrhea_death_rate.csv")
+
+#Poverty data
+poverty <- read.csv("../data/data_poverty.csv")
+
+handwash <- read.csv("../data/data_handwash.csv")
+```
+## Dynamic Paragraph
+
+```{r, echo = FALSE, message=FALSE}
+  #Convert Years to rows
+population_filtered <- select(population, -c(Country.Code, Indicator.Name, Indicator.Code)) %>%
+                      gather("Year", "Population", -Country.Name)%>%
+                      rename(Country =Country.Name)
+#Rename columns for handwash
+handwash_filtered <- slice(handwash,3:n())
+names(handwash_filtered) <-  paste0(names(handwash_filtered), ",") %>%
+                               str_replace("\\.1,", ", Urban") %>%
+                          str_replace("\\.2,", ", Rural") %>%
+                          str_replace("\\,$", ", Both Rural and Urban")
+#Remove Years to actual years
+population_filtered$Year <- strtoi(str_replace(population_filtered$Year, "X", ""))
+#Convert handwash years to rows
+handwash_filtered <- rename(handwash_filtered, Countries = "X, Both Rural and Urban") %>%
+                      gather("Year_and_type", "Percent", -Countries) %>%
+                    separate("Year_and_type", into = c("Year","Urban_Rural_or_Both"), sep = ", ")%>%
+                    rename(Country = Countries)
+#Convert Percentages to integers
+#String to integer function is from:
+#https://www.tutorialkart.com/r-tutorial/r-convert-string-to-integer/#:~:text=To%20convert%20String%20to%20Integer%20in%20R%20programming%2C%20call%20strtoi,respect%20to%20the%20specified%20base.
+handwash_filtered$Percent <- strtoi(handwash_filtered$Percent)
+handwash_filtered <- filter(handwash_filtered, !is.na(handwash_filtered$Percent))
+#Convert Year to actual years
+handwash_filtered$Year <- strtoi(str_replace(handwash_filtered$Year, "X", ""))
+#Join handwash_filtered and cholera and filter for max date
+handwash_and_cholera <- inner_join(handwash_filtered, cholera) %>% filter(Year == max(Year))
+#Value 1
+maximum_proportion_handwash <- handwash_and_cholera %>%filter(Percent == max(Percent)) %>%
+  pull(Percent)
+maximum_proportion_handwash <- maximum_proportion_handwash[1]
+#Value 2
+max_prop_how_many <-  handwash_and_cholera %>% filter(Percent == max(Percent)) %>%
+  pull(Country)
+max_prop_how_many <- length(max_prop_how_many)
+#Value 3
+avg_prop_poverty <- round((mean(na.omit(poverty$percPoverty))), digits = 2)
+#Value 4
+median_cholera_cases  <- round(median(handwash_and_cholera$Number.of.reported.cases.of.cholera, na.rm =TRUE), digits = 2)
+#Value 5
+minimum_proportion_handwash <-  handwash_and_cholera %>% filter(Percent == min(Percent)) %>%
+  pull(Percent)
+minimum_proportion_handwash <- minimum_proportion_handwash[1]
+#Value 6
+min_prop_how_many <-  handwash_and_cholera %>% filter(Percent == min(Percent)) %>%
+  pull(Country)
+min_prop_how_many <- length(min_prop_how_many)
+#Summary list function
+summary_list <- list()
+summary_list$maximum_proportion_handwash <- maximum_proportion_handwash
+summary_list$max_prop_how_many <- max_prop_how_many
+summary_list$avg_prop_poverty <- avg_prop_poverty
+summary_list$median_cholera_cases <- median_cholera_cases
+summary_list$minimum_proportion_handwash <-minimum_proportion_handwash
+summary_list$min_prop_how_many <- min_prop_how_many
+summary_list$avg_cholera_cases <- round(mean(handwash_and_cholera$Number.of.reported.cases.of.cholera, na.rm =TRUE), digits = 2)
+```
+Our first value of interest was to evaluate the highest proportion of people with access to hand washing in any of the countries as of the most recent date. The highest proportion identified is `r summary_list$maximum_proportion_handwash`. Only `r summary_list$max_prop_how_many` country( or countries) share the highest proportion. Subsequently, the lowest proportion identified is `r summary_list$minimum_proportion_handwash`, with `r summary_list$min_prop_how_many` country (countries) sharing this proportion. The average percentage of poverty throughout the world throughout the years is `r summary_list$avg_prop_poverty`. Finally, the median cholera cases of all the countries as of the most recent year is `r summary_list$median_cholera_cases`, while the average cholera cases of all the countries as of the most recent year is `r summary_list$avg_cholera_cases``.
+
+## Table
+```{r, echo = FALSE}
+highest_poverty <- poverty %>%
+  group_by(country)%>%
+  filter(percPoverty >= 50.0)
+table <- as.data.table(highest_poverty)
+kable(table)
+ 
+```
+
+I chose this table because it represents the countries that have a majority poverty population. I included this table because we can use the information off this table to determine the link between poverty and disease. The information presented on this table include the name of the country, the percentage of poverty in each country, the year the data was collected, and the percentage of population that learn less than 10 dollars a day, and less than 5.50 dollars a day specifically. This table allows us to see the most impoverished countries in the world, which we can use to establish connections between widespread economic struggle, and increase of disease rates. It also reveals the scope of poverty and its definitions that are used by organizations. There is a trend that the countries with the highest rates of poverty are centered around Africa and the Middle East, and that the vast majority of the populations depicted in the table earn less than 10 USD each day. 
+
+
+## Chart 1
+```{r, echo = FALSE, message = FALSE}
+  #Convert Years to rows
+population_filtered <- select(population, -c(Country.Code, Indicator.Name, Indicator.Code)) %>%
+                      gather("Year", "Population", -Country.Name)%>%
+                      rename(Country =Country.Name)
+#Rename columns for handwash
+handwash_filtered <- slice(handwash,3:n())
+names(handwash_filtered) <-  paste0(names(handwash_filtered), ",") %>%
+                               str_replace("\\.1,", ", Urban") %>%
+                          str_replace("\\.2,", ", Rural") %>%
+                          str_replace("\\,$", ", Both Rural and Urban")
+
+#Remove Years to actual years
+population_filtered$Year <- strtoi(str_replace(population_filtered$Year, "X", ""))
+
+#Convert handwash years to rows
+handwash_filtered <- rename(handwash_filtered, Countries = "X, Both Rural and Urban") %>%
+                      gather("Year_and_type", "Percent", -Countries) %>%
+                    separate("Year_and_type", into = c("Year","Urban_Rural_or_Both"), sep = ", ")%>%
+                    rename(Country = Countries)
+
+#Convert Percentages to integers
+#String to integer function is from:
+#https://www.tutorialkart.com/r-tutorial/r-convert-string-to-integer/#:~:text=To%20convert%20String%20to%20Integer%20in%20R%20programming%2C%20call%20strtoi,respect%20to%20the%20specified%20base.
+handwash_filtered$Percent <- strtoi(handwash_filtered$Percent)
+handwash_filtered <- filter(handwash_filtered, !is.na(handwash_filtered$Percent))
+
+#Convert Year to actual years
+handwash_filtered$Year <- strtoi(str_replace(handwash_filtered$Year, "X", ""))
+
+#Join handwash_filtered and cholera
+handwash_and_cholera <- inner_join(handwash_filtered, cholera)
+
+#Join handwash_and_cholera with population_filtered, and
+#create Proportion for Cholera Cases divided by Proportion of Sanitation
+final_dataframe <- inner_join(handwash_and_cholera, population_filtered) %>%
+                    mutate(cases_per_population = Number.of.reported.cases.of.cholera / Population * 100) %>%
+                    filter(Year == 2016 | Year == 2015 | Year == 2014 | Year ==2013 | Year == 2012 | Year == 2011| Year == 2010 )
+
+#Make our ggplot2 chart
+chart_1 <- ggplot(data = final_dataframe, aes(x = Percent, y = cases_per_population)) +
+                    geom_point(alpha = .4, color = "seagreen") +
+                    geom_smooth()+facet_wrap(~Urban_Rural_or_Both) +
+                    xlab("Percentage of People with Access to Clean Services") +
+                    ylab("Reported Cases of Cholera per Population of Country") +
+                  # I got the scales::comma lable from:
+                  #https://stackoverflow.com/questions/52602503/display-an-axis-value-in-millions-in-ggplot
+                  #Square root scale is from:
+                  #https://ggplot2-book.org/scales-guides.html
+                    scale_y_sqrt(labels = scales::comma) +
+                    labs(title = "Percent of Access to Clean Services vs Percent of Reported Cases of Cholera per Country Population",
+                        subtitle = "Relationship between clean services and reported cases from 2010 to 2016",
+                        caption = "This chart was created to access the relation
+                        between the percentage of people in a country with
+                        access to clean handwashing services and the reported cases of cholera per population of country.
+                        Our initial belief was that there would be a negative correlation
+                        between the two variables as more access to clean handwashing services
+                        reduces the risk of diseases. The graph suggests a non-linear
+                        relationship, but with a general negative trend.")
+
+
+chart_1
+
+
+```
+
+
+This chart was created to access the relation between the percentage of people in a country with access to clean handwashing services and the reported cases of cholera per population of country. Our initial belief was that there would be a negative correlation between the two variables as more access to clean handwashing services
+reduces the risk of diseases. The graph suggests a non-linear
+relationship, but with a general negative trend.
+
+
+## Chart 2
+
+
+```{r, echo = FALSE, message = FALSE}
+#Rename columns for handwash
+handwash_for_chart_two <- slice(handwash,3:n())
+names(handwash_for_chart_two) <-  paste0(names(handwash_for_chart_two), ",") %>%
+  str_replace("\\.1,", ", Urban") %>%
+  str_replace("\\.2,", ", Rural") %>%
+  str_replace("\\,$", ", Both Rural and Urban")
+handwash_for_chart_two <- rename(handwash_for_chart_two, Countries = "X, Both Rural and Urban") %>%
+  gather("Year_and_type", "Percent", -Countries) %>%
+  separate("Year_and_type", into = c("Year","Urban_Rural_or_Both"), sep = ", ")%>%
+  rename(Country = Countries)
+#Convert Percentages to integers
+#String to integer function is from:
+#https://www.tutorialkart.com/r-tutorial/r-convert-string-to-integer/#:~:text=To%20convert%20String%20to%20Integer%20in%20R%20programming%2C%20call%20strtoi,respect%20to%20the%20specified%20base.
+handwash_for_chart_two$Percent <- strtoi(handwash_for_chart_two$Percent)
+handwash_for_chart_two <- filter(handwash_for_chart_two, !is.na(handwash_for_chart_two$Percent))
+
+#Convert Year to actual years
+handwash_for_chart_two$Year <- strtoi(str_replace(handwash_for_chart_two$Year, "X", ""))
+
+handwash_for_chart_two <- handwash_for_chart_two %>%  filter(Urban_Rural_or_Both == "Both Rural and Urban") %>%
+                                            group_by(Year) %>%
+                                            summarize(Percent = mean(Percent))
+total_handwashing_plot <- handwash_for_chart_two %>%
+  ggplot(aes(x = Year, y = Percent)) + 
+  geom_line(alpha = .4, color = "seagreen") + 
+  xlab("Date") +
+  ylab("Percentage of People with Access to Handwashing Services") +
+  scale_y_sqrt(labels = scales::comma) + 
+  labs(title = "Average total percentage of Handwashing Access per Year",
+       subtitle = "Relationship between Handwashing Service Accessibility and Date",
+       caption = " This chart was created to determine the correlation between handwashing access and time.
+                  This will help people visualize how handwashing access has developed over the past years.
+                  We initially thought that the graph would show very visible positive growth, however,
+                  we can now see how their are quite a few dips in the chart that we did not expect.It is observed
+                  how the chart does seem to be levelling out in the recent years. This answers our 
+                  question #2 of if access to handwashing services has increased over time.")
+
+total_handwashing_plot
+
+```
+
+This chart was created to determine the correlation between handwashing access and time. This will help people visualize how handwashing access has developed over the past years. We initially thought that the graph would show very visible positive growth, however, we can now see how their are quite a few dips in the chart that we did not expect.It is observed how the chart does seem to be levelling out in the recent years. This answers our question #2 of if access to handwashing services has increased over time.
+
+## Chart 3
+```{r, echo = FALSE, message = FALSE}
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(tidyr)
+
+
+
+handwash_filtered <- slice(handwash,3:n())
+names(handwash_filtered) <-  paste0(names(handwash_filtered), ",") %>%
+  str_replace("\\.1,", ", Urban") %>%
+  str_replace("\\.2,", ", Rural") %>%
+  str_replace("\\,$", ", Both Rural and Urban")
+
+#Convert handwash years to rows
+handwash_filtered <- rename(handwash_filtered, Countries = "X, Both Rural and Urban") %>%
+  gather("Year_and_type", "Percent", -Countries) %>%
+  separate("Year_and_type", into = c("Year","Urban_Rural_or_Both"), sep = ", ")%>%
+  rename(Country = Countries)
+
+#Convert Percentages to integers
+#String to integer function is from:
+#https://www.tutorialkart.com/r-tutorial/r-convert-string-to-integer/#:~:text=To%20convert%20String%20to%20Integer%20in%20R%20programming%2C%20call%20strtoi,respect%20to%20the%20specified%20base.
+handwash_filtered$Percent <- strtoi(handwash_filtered$Percent)
+handwash_filtered <- filter(handwash_filtered, !is.na(handwash_filtered$Percent))
+
+#Convert Year to actual years
+handwash_filtered$Year <- strtoi(str_replace(handwash_filtered$Year, "X", ""))
+
+
+
+handwash_filtered <- slice(handwash,3:n())
+names(handwash_filtered) <-  paste0(names(handwash_filtered), ",") %>%
+  str_replace("\\.1,", ", Urban") %>%
+  str_replace("\\.2,", ", Rural") %>%
+  str_replace("\\,$", ", Both Rural and Urban")
+
+#Convert handwash years to rows
+handwash_filtered <- rename(handwash_filtered, Countries = "X, Both Rural and Urban") %>%
+  gather("Year_and_type", "Percent", -Countries) %>%
+  separate("Year_and_type", into = c("Year","Urban_Rural_or_Both"), sep = ", ")%>%
+  rename(Country = Countries)
+
+#Convert Percentages to integers
+#String to integer function is from:
+#https://www.tutorialkart.com/r-tutorial/r-convert-string-to-integer/#:~:text=To%20convert%20String%20to%20Integer%20in%20R%20programming%2C%20call%20strtoi,respect%20to%20the%20specified%20base.
+handwash_filtered$Percent <- strtoi(handwash_filtered$Percent)
+handwash_filtered <- filter(handwash_filtered, !is.na(handwash_filtered$Percent))
+
+#Convert Year to actual years
+handwash_filtered$Year <- strtoi(str_replace(handwash_filtered$Year, "X", ""))
+
+
+poverty_df <- data.frame(poverty$percPoverty, poverty)
+poverty_df <- data.frame(poverty_df$percPoverty, poverty)
+poverty_df$percPoverty <- as.double(poverty_df$percPoverty)
+
+
+handwash_df <- handwash_filtered %>% mutate(no = (100 - handwash_filtered$Percent)) 
+
+
+poverty.df <- poverty_df %>% mutate(
+  country_type = ifelse(poverty_df$percPoverty  < 10,"rich", ifelse(poverty_df$percPoverty < 20 & poverty_df$percPoverty > 10,  
+                                                                    "average", ifelse(poverty_df$percPoverty < 30 & poverty_df$percPoverty > 20, "slightly poor", ifelse(poverty_df$percPoverty < 40 & 
+                                                                                                                                                                           poverty_df$percPoverty > 30, "poor", "extremely poor"))))
+)
+
+poverty.df <- poverty.df %>% 
+  rename("Country" = "country")
+
+merge <- inner_join(poverty.df, handwash_df)
+
+
+merge <- merge %>%group_by(country_type) %>%
+  summarise(Percent = mean(Percent))
+merge <- arrange(merge, Percent)
+
+merge %>%filter(!is.na(country_type))
+
+
+poverty_df <- data.frame(poverty$percPoverty, poverty)
+poverty_df <- data.frame(poverty_df$percPoverty, poverty)
+poverty_df$percPoverty <- as.double(poverty_df$percPoverty)
+
+
+handwash_df <- handwash_filtered %>% mutate(no = (100 - handwash_filtered$Percent)) 
+
+
+poverty.df <- poverty_df %>% mutate(
+country_type = ifelse(poverty_df$percPoverty  < 10,"rich", ifelse(poverty_df$percPoverty < 20 & poverty_df$percPoverty > 10,  
+    "average", ifelse(poverty_df$percPoverty < 30 & poverty_df$percPoverty > 20, "slightly poor", ifelse(poverty_df$percPoverty < 40 & 
+    poverty_df$percPoverty > 30, "poor", "extremely poor"))))
+ )
+
+poverty.df <- poverty.df %>% 
+  rename("Country" = "country")
+
+merge <- inner_join(poverty.df, handwash_df)
+
+
+
+merge <- merge %>%group_by(country_type) %>%
+summarise(Percent = mean(Percent))
+merge <- arrange(merge, Percent)
+
+merge %>%filter(!is.na(country_type))
+
+p<-ggplot(data= na.omit(merge), aes(x=country_type, y=Percent)) +
+  geom_bar(stat="identity", fill = " dark green") +
+ 
+  xlab("Country Condition based on Poverty Rates") +
+  ylab("Percentage of the Country that has Access to Handwashing") +
+   scale_y_sqrt(labels = scales::comma)  +
+  labs(title = "Percent of Handwashing Availibility in types of Countries", 
+       subtitle = "Relationship between the average handwashing percentage and country types from 2000 to 2020", 
+       caption = "This depicts the average proportion of handwashing in countries based on their classification of their living quality. 
+       This was calculated based on what percentage the country was in poverty." )
+p
+
+
+
+
+```
+The reason for working on this chart is to delve into how poverty can affect access to clean water services. This problem that stems from poverty can result in diseases such as cholera, or symptoms of diarrhea, and other factors. This may also result in health problems, and thus more money spent on those services, continuing and increasing the cycle of poverty. From the graph and data that I analyzed, the companies with the lowest poverty rates ended up having the most access to handwashing. The divide between the average of the lowest poverty rate countries and highest poverty rates was 86.17% compared to 25.21% which is a really big gap. Thus, there needs to be a lot more emphasis on countries that have high poverty rates. The data was not surprising in terms of the condition of the countries and their percentages, but the gap between each condition was alarming to see, especially at the extreme ends of each side.
