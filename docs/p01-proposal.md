@@ -1,25 +1,20 @@
-# Water, and it's Factors in Different Countries: Project Proposal
+# Water, and its Factors in Different Countries: Project Proposal
 ## Code name: Water
 
-
-For what to do, see the [`../instructions/`](../instructions/) directory, specifically:
-
-* [Design Brief](../instructions/project-design-brief.pdf)
-* [Project Proposal Requirements](../instructions/p01-proposal-requirements.md)
-
-## Authors:
+## Authors For P01, P02:
 - Ryan Louie (rlouie21@uw.edu)
 - Christopher Chen (cmchen22@uw.edu)
 - Sean Lee (seanl6@uw.edu)
 - Mynah Shetty (mshett@uw.edu)
+
 
 ## Affiliation: Technical Foundations of Informatics - The Information School - University of Washington
 
 ## Date: Autumn 2022
 
 ## Abstract
-Our main question is if their is a correlation between poverty, access to clean water and sanitation methods, and diagnosis of disease and infection.
-This question is important because lots of third world countries don't have proper access to clean water and sanitation services so people in these areas may be at high risk of contracting diseases such as cholera, and diarrheal disease. Analyzing this correlation may lead to change access to clean water and sanitation in these countries. To address the question, we will analyze each data set (poverty rate, handwash rate, diarrheal death rate, and cholera infection rate) and analyze the correlations we see between these data sets.
+Our main question is if there is a correlation between poverty, access to clean water and sanitation methods, and diagnosis of disease and infection.
+This question is important because lots of third world countries don't have proper access to clean water and sanitation services so people in these areas may be at high risk of contracting diseases such as cholera, and diarrheal disease. To address the question, we will analyze each data set (poverty rate, handwash rate, diarrheal death rate, and cholera infection rate) and analyze the correlations we see between these data sets.
 
 ## Keywords
 
@@ -143,25 +138,12 @@ https://www.worldbank.org/en/topic/water/publication/wash-poverty-diagnostic
 This sources gives an overviews on how the world is trying to better water quality services. It focuses on regions that are in poverty.
 
 #4
-Djantchiemo, S., &amp; White, T. (2022, March 25). Figure of the week: Access to water, sanitation, and hygiene (WASH) services in sub-Saharan africa. Brookings. Retrieved October 31, 2022, from https://www.brookings.edu/blog/africa-in-focus/2022/03/25/figure-of-the-week-access-to-water-sanitation-and-hygiene-wash-services-in-sub-saharan-africa/
-
-
-#5
 World Health Organization. (n.d.). Gho | by category | handwashing with SOAP - data by country. World Health Organization. Retrieved October 31, 2022, from https://apps.who.int/gho/data/node.main.WSHHYGIENE?lang=en
 
-#6
-World Health Organization. (n.d.). Gho | by category | open defecation - data by country. World Health Organization. Retrieved October 31, 2022, from https://apps.who.int/gho/data/node.main.WSHOPENDEFECATION?lang=en
-
-#7
+#5
 World Health Organization. (n.d.). Gho | by category | number of reported cases - data by country. World Health Organization. Retrieved October 31, 2022, from https://apps.who.int/gho/data/node.main.175?lang=en
 
-#8
-World Health Organization. (n.d.). Gho | by category | rate of deaths by country - diarrhoeal diseases. World Health Organization. Retrieved October 31, 2022, from https://apps.who.int/gho/data/view.main.ghe2002015-CH3?lang=en
-
-#9
-Poverty Rate by Country 2022. Poverty rate by country 2022. (n.d.). Retrieved October 31, 2022, from https://worldpopulationreview.com/country-rankings/poverty-rate-by-country
-
-#10
+#6
 Population, total. Data Last Updated 9/16/2022. Retrieved November 14, 2022, from https://data.worldbank.org/indicator/SP.POP.TOTL
 ### Appendix A: Questions
 N/A

@@ -5,13 +5,13 @@ library(stringr)
 library(tidyr)
 
 #Cholera data
-cholera <- read.csv("data/data_cholera_infection_rate.csv")
+cholera <- read.csv("../data/data_cholera_infection_rate.csv")
 
 #Handwashing data
-handwash <- read.csv("data/data_handwash.csv")
+handwash <- read.csv("../data/data_handwash.csv")
 
 #Population data
-population <- read.csv("data/data_country_population.csv")
+population <- read.csv("../data/data_country_population.csv")
 
 #Convert Years to rows
 population_filtered <- select(population, -c(Country.Code, Indicator.Name, Indicator.Code)) %>%
