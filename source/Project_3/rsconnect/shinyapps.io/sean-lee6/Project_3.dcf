@@ -5,9 +5,9 @@ account: sean-lee6
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7833425
-bundleId: 6601820
+bundleId: 6612231
 url: https://sean-lee6.shinyapps.io/Project_3/
-when: 1670374838.2855
-lastSyncTime: 1670374838.28553
+when: 1670532106.61831
+lastSyncTime: 1670532106.61832
 asMultiple: FALSE
 asStatic: FALSE

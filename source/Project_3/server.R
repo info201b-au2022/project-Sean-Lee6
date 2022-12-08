@@ -91,7 +91,8 @@ server <-function(input, output) {
                                                        
                   geom_point(alpha = .4, color = "seagreen") +
                   geom_smooth() + 
-                  xlab("Percentage of People with Access to Clean Services") +
-                  ylab("Reported Cases of Cholera per Population of Country") +
+                  xlab("Percentage of People with Access to Clean Services (%)") +
+                  ylab("Reported Cases of Cholera
+                       per Population of Country (%)") +
                   scale_y_sqrt(labels = scales::comma))})
 }
